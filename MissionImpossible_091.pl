@@ -61,37 +61,41 @@ fluent(Y, X, [], C, s0):- ethan_loc(Y, X), capacity(C).
 
 % The state is the result of a left action on a State
 fluent(Y, X, L, C, result(left, State)):-
-  % Calculating the previous X location
-  XOld is X + 1,
   % Checking if the previous X location is on the grid (along with the Y)
   on_grid(Y, XOld),
+  % Calculating the previous X location
+  X is XOld - 1,
+  X >= 0,
   % Searching for the previous state
   fluent(Y, XOld, L, C, State).
 
 % The state is the result of a right action
 fluent(Y, X, L, C, result(right, State)):-
-  % Calculating the previous X location
-  XOld is X - 1,
   % Checking if the previous X location is on the grid (along with the Y)
   on_grid(Y, XOld),
+  % Calculating the previous X location
+  X is XOld + 1,
+  on_grid(Y, X),
   % Searching for the previous state
   fluent(Y, XOld, L, C, State).
 
 % The state is the result of a down action
 fluent(Y, X, L, C, result(down, State)):-
-  % Calculating the previous Y location
-  YOld is Y - 1,
   % Checking if the previous Y location is on the grid (along with the X)
   on_grid(YOld, X),
+  % Calculating the previous Y location
+  Y is YOld + 1,
+  on_grid(Y, X),
   % Searching for the previous state
   fluent(YOld, X, L, C, State).
 
 % The state is the result of a up action
 fluent(Y, X, L, C, result(up, State)):-
-  % Calculating the previous Y location
-  YOld is Y + 1,
   % Checking if the previous Y location is on the grid (along with the X)
   on_grid(YOld, X),
+  % Calculating the previous Y location
+  Y is YOld - 1,
+  Y >= 0,
   % Searching for the previous state
   fluent(YOld, X, L, C, State).
 
@@ -105,7 +109,7 @@ fluent(Y, X, [[Y, X]|L], C, result(carry, State)):-
   capacity(Cap),
   % Calculate the previous capacity
   between(0, Cap, COld),
-  COld is C + 1,
+  C is COld - 1,
   % Make sure the current capacity is between the maximum and Cap - 1
   % Searching for the previous state.
   fluent(Y, X, L, COld, State).
@@ -152,7 +156,6 @@ solve(S):-
 % GOAL
 % Check goal using IDS
 goal(S):- ids(S, 0).
-goal(S, M):- ids(S, 0, M). % Check goal with max depth
 
 %==============================================
 % IDS
@@ -171,17 +174,17 @@ ids(S, D):-
   ).
 
 % IDS with max depth
-ids(S, D, M):-
+general_ids(Q):- general_ids(0, Q).
+general_ids(D, Q):-
   (
     % Search for a solution at the current depth
-    call_with_depth_limit(solve(S), D, R),
+    call_with_depth_limit(Q, D, R),
     % Check if the result depth is not "depth limit exceeded" (meaning a solution was found)
     R \= depth_limit_exceeded
   ); % Otherwise
   (
-    D < M,
     % Calculate the next depth
     D1 is D + 1,
     % Search for a solution at the next depth
-    ids(S, D1, M)
+    general_ids(D1, Q)
   ).
