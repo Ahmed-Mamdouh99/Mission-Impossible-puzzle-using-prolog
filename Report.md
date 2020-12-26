@@ -153,3 +153,9 @@ S = result(drop, result(up, result(carry, result(down, result(drop, result(up, r
 S = result(drop, result(up, result(up, result(carry, result(down, result(down, result(drop, result(up, result(carry, result(right, result(right, result(down, s0)))))))))))) ;
 S = result(drop, result(up, result(up, result(carry, result(down, result(down, result(drop, result(up, result(carry, result(right, result(down, result(right, s0)))))))))))) ;
 S = result(drop, result(up, result(up, result(carry, result(down, result(down, result(drop, result(up, result(carry, result(down, result(right, result(right, s0))))))))))))
+
+# Sources
+
+[Predicate between/3](https://www.swi-prolog.org/pldoc/doc_for?object=between/3)
+
+[Function max/2](https://www.swi-prolog.org/pldoc/man?function=max/2)

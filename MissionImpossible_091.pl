@@ -31,26 +31,13 @@ on_grid(Y, X):-
   % Get grid dimensions
   grid_dimensions(Height, Width),
   % Check if Y, X are within 0 and the grid dimensions
-  Y >= 0,
-  Y =< Height,
-  X >= 0,
-  X =< Width.
-
-%==============================================
-% ARANGE
-% Base case: Stop when you reach the right limit
-arange(Max, Max, []). 
-% The current range is the current left limit and the rest of the range
-arange(Curr, Max, [Curr|T]):-
-  % Calculate the next number
-  Next is Curr + 1,
-  % calculate the rest of the range
-  arange(Next, Max, T).
+  between(0, Height, Y),
+  between(0, Width, X).
 
 %==============================================
 % IN
 % Base case: Y is in a list of one element if that element is Y
-in(Y, [Y|_]). 
+in(Y, [Y|_]).
 in(Y, [X|T]):-
   % Check if Y is in T
   in(Y, T),
@@ -117,10 +104,9 @@ fluent(Y, X, [[Y, X]|L], C, result(carry, State)):-
   % Get the maximum capacity Cap
   capacity(Cap),
   % Calculate the previous capacity
+  between(0, Cap, COld),
   COld is C + 1,
   % Make sure the current capacity is between the maximum and Cap - 1
-  C < Cap,
-  C >= 0,
   % Searching for the previous state.
   fluent(Y, X, L, COld, State).
 
@@ -134,13 +120,13 @@ fluent(Y, X, L, Cap, result(drop, State)):-
   length(L, Length),
   % Calculate the minimum possible carrying capacity
   Min is max(0, Cap - Length),
-  % Get a list of the possible carrying capacity (Min, cap(
-  arange(Min, Cap, Range),
-  % Make sure the old capacity COld is inside that list
-  in(COld, Range),
+  % Make sure the old capacity COld is between min and max
+  between(Min, Cap, COld),
   % Search for the previous state
   fluent(Y, X, L, COld, State).
 
+
+%==============================================
 %==============================================
 % DRIVER CODE
 
@@ -166,6 +152,7 @@ solve(S):-
 % GOAL
 % Check goal using IDS
 goal(S):- ids(S, 0).
+goal(S, M):- ids(S, 0, M). % Check goal with max depth
 
 %==============================================
 % IDS
@@ -181,4 +168,20 @@ ids(S, D):-
     D1 is D + 1,
     % Search for a solution at the next depth
     ids(S, D1)
+  ).
+
+% IDS with max depth
+ids(S, D, M):-
+  (
+    % Search for a solution at the current depth
+    call_with_depth_limit(solve(S), D, R),
+    % Check if the result depth is not "depth limit exceeded" (meaning a solution was found)
+    R \= depth_limit_exceeded
+  ); % Otherwise
+  (
+    D < M,
+    % Calculate the next depth
+    D1 is D + 1,
+    % Search for a solution at the next depth
+    ids(S, D1, M)
   ).
